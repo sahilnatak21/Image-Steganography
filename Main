@@ -1,0 +1,37 @@
+package Steganography;
+
+import java.util.Scanner;
+
+public class main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Steganography Project");
+        System.out.println("1. Encode message into an image");
+        System.out.println("2. Decode message from an image");
+        System.out.print("Choose an option (1 or 2): ");
+        int choice = scanner.nextInt();
+        scanner.nextLine();  // Consume the newline character
+
+        if (choice == 1) {
+            // Encode Message
+            System.out.print("Enter the message to hide: ");
+            String message = scanner.nextLine();
+            System.out.print("Enter the path of the image file: ");
+            String imagePath = scanner.nextLine();
+            System.out.print("Enter the output image file path: ");
+            String outputPath = scanner.nextLine();
+            EncodeDecode.encodeMessage(imagePath, message, outputPath);
+        } else if (choice == 2) {
+            // Decode Message
+            System.out.print("Enter the image file path: ");
+            String imagePath = scanner.nextLine();
+            String decodedMessage = EncodeDecode.decodeMessage(imagePath);
+            System.out.println("Decoded Message: " + decodedMessage);
+        } else {
+            System.out.println("Invalid choice. Exiting program.");
+        }
+
+        scanner.close();
+    }
+}
+
