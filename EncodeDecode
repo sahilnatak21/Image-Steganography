@@ -1,0 +1,107 @@
+package Steganography;
+
+import java.awt.Color;
+import java.awt.image.BufferedImage;
+
+public class EncodeDecode {
+
+    public static void encodeMessage(String imagePath, String message, String outputPath) {
+        BufferedImage image = Steganography.loadImage(imagePath);
+        if (image == null) {
+            System.out.println("Image not found!");
+            return;
+        }
+
+        // Add end character
+        message += '\0';
+        int msgIndex = 0;
+        int bitIndex = 0;
+
+        outer:
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                if (msgIndex >= message.length()) break outer;
+
+                int rgb = image.getRGB(x, y);
+                Color c = new Color(rgb);
+                int red = c.getRed() & 0xFE;
+                int green = c.getGreen() & 0xFE;
+                int blue = c.getBlue() & 0xFE;
+
+                char ch = message.charAt(msgIndex);
+                int[] bits = new int[8];
+                for (int i = 7; i >= 0; i--) {
+                    bits[7 - i] = (ch >> i) & 1;
+                }
+
+                // Put bits into RGB
+                red |= bits[0];
+                green |= bits[1];
+                blue |= bits[2];
+                image.setRGB(x, y, new Color(red, green, blue).getRGB());
+
+                x++;
+                if (x >= image.getWidth()) break outer;
+
+                c = new Color(image.getRGB(x, y));
+                red = c.getRed() & 0xFE;
+                green = c.getGreen() & 0xFE;
+                blue = c.getBlue() & 0xFE;
+                red |= bits[3];
+                green |= bits[4];
+                blue |= bits[5];
+                image.setRGB(x, y, new Color(red, green, blue).getRGB());
+
+                x++;
+                if (x >= image.getWidth()) break outer;
+
+                c = new Color(image.getRGB(x, y));
+                red = c.getRed() & 0xFE;
+                green = c.getGreen() & 0xFE;
+                blue = c.getBlue() & 0xFE;
+                red |= bits[6];
+                green |= bits[7];
+                image.setRGB(x, y, new Color(red, green, blue).getRGB());
+
+                msgIndex++;
+            }
+        }
+
+        Steganography.saveImage(image, outputPath);
+        System.out.println("Message successfully encoded!");
+    }
+
+    public static String decodeMessage(String imagePath) {
+        BufferedImage image = Steganography.loadImage(imagePath);
+        if (image == null) return "Image not found!";
+
+        StringBuilder message = new StringBuilder();
+        int[] bits = new int[8];
+        int bitCount = 0;
+
+        outer:
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                for (int i = 0; i < 3 && x < image.getWidth(); i++, x++) {
+                    Color c = new Color(image.getRGB(x, y));
+                    if (bitCount < 8) bits[bitCount++] = c.getRed() & 1;
+                    if (bitCount < 8) bits[bitCount++] = c.getGreen() & 1;
+                    if (bitCount < 8 && i != 2) bits[bitCount++] = c.getBlue() & 1;
+
+                    if (bitCount == 8) {
+                        int ascii = 0;
+                        for (int j = 0; j < 8; j++) {
+                            ascii = (ascii << 1) | bits[j];
+                        }
+                        if (ascii == 0) break outer;
+                        message.append((char) ascii);
+                        bitCount = 0;
+                    }
+                }
+                x--; // Fix for inner loop increment
+            }
+        }
+
+        return message.toString();
+    }
+}
