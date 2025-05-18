@@ -1,0 +1,28 @@
+package Steganography;
+
+import java.awt.image.BufferedImage;
+import java.io.File;
+import javax.imageio.ImageIO;
+import java.io.IOException;
+
+public class Steganography {
+
+    // Load image from a given path
+    public static BufferedImage loadImage(String imagePath) {
+        try {
+            return ImageIO.read(new File(imagePath));
+        } catch (IOException e) {
+            System.out.println("Error loading image: " + e.getMessage());
+            return null;
+        }
+    }
+
+    // Save image to the given path
+    public static void saveImage(BufferedImage image, String outputPath) {
+        try {
+            ImageIO.write(image, "png", new File(outputPath));
+        } catch (IOException e) {
+            System.out.println("Error saving image: " + e.getMessage());
+        }
+    }
+}
